@@ -12,3 +12,4 @@ obj-$(CONFIG_SHELLSCRIPTHANDLER) += shell_scripthandler.o
 obj-$(CONFIG_RAW) += raw_handler.o
 obj-$(CONFIG_REMOTE_HANDLER) += remote_handler.o
 obj-$(CONFIG_UBOOT) += uboot_handler.o
+obj-$(CONFIG_WRAPPER_HANDLER) += wrapper_handler.o
