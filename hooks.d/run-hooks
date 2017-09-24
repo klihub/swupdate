@@ -1,0 +1,88 @@
+#!/bin/sh
+
+#########################
+# logging functions
+
+# Until we set these up from the handler, this will do...
+SWUPD_FD_INFO=1
+SWUPD_FD_WARN=3
+SWUPD_FD_ERROR=2
+SWUPD_FD_DEBUG=4
+SWUPD_FD_TRACE=5
+
+info () {
+    echo "[${HOOK:-main-hook}]: $*" >& $SWUPD_FD_INFO
+}
+
+
+warn () {
+    echo "[${HOOK:-main-hook}]: $*" >& $SWUPD_FD_WARN
+}
+
+
+error () {
+    echo "[${HOOK:-main-hook}]: $*" >& $SWUPD_FD_ERROR
+}
+
+
+debug () {
+    echo "[${HOOK:-main-hook}]: $*" >& $SWUPD_FD_DEBUG
+}
+
+
+trace () {
+    echo "[${HOOK:-main-hook}]: $*" >& $SWUPD_FD_TRACE
+}
+
+#########################
+# main script
+
+# exit immediately on (uncaught) errors
+set -e
+
+# set SWUPDATE_DEBUG_HOOKS=yes, to trace hook scriptlet execution
+if [ -n "$SWUPDATE_DEBUG_HOOKS" ]; then
+    set -x
+fi
+
+# backend type
+BACKEND=$1
+
+# type-specific hooks co-hosted under our parent directory
+HOOK_DIR=${0%/*}
+
+# discover and sort hooks
+HOOKS=$(ls $HOOK_DIR/$BACKEND/[0-9]*-* |
+            while read p; do
+                b=${p##*/}; echo "${b%%-*}:$p"
+            done | sort -n -k1 | cut -d : -f2)
+
+# run all hooks until first failure
+for h in $HOOKS; do
+    if [ -e $h ]; then
+        hook=${h##*/}
+        case $hook in
+            *~|*.swp) continue;;
+        esac
+
+        if [ ! -x $h ]; then
+            warn "skipping non-exectuable hook $hook ($h)..."
+            continue
+        fi
+
+        info "Executing $BACKEND hook $hook..."
+        HOOK=$hook
+        if ! . $h $*; then
+           status=1
+        else
+           status=0
+        fi
+        HOOK=""
+        if [ $status != 0 ]; then
+            warn "$BACKEND hook $hook failed."
+            exit $status
+        fi
+    fi
+done
+
+exit 0
