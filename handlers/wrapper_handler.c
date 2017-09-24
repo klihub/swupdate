@@ -58,7 +58,7 @@
 #endif
 
 #ifndef MAINHOOK
-#	define MAINHOOK HOOKDIR"/run-hooks.sh"
+#	define MAINHOOK HOOKDIR"/run-hooks"
 #endif
 
 #ifndef MAX
