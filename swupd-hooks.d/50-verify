@@ -1,0 +1,4 @@
+#!/bin/sh
+
+info "Should swupd verify $SWUPD_INACTIVE_PARTITION..."
+

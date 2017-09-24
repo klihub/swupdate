@@ -1,0 +1,4 @@
+#!/bin/sh
+
+info "Probably no need to swap active bootloader entry, already done by edgeos."
+

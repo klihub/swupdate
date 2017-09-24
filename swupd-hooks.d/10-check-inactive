@@ -1,0 +1,40 @@
+#!/bin/sh
+
+info "Checking inactive partition..."
+
+active=$(cat /proc/cmdline | sed 's/^.*root=//g;s/ .*$//g')
+active=/dev/vfs2
+
+case $active in
+    *2) inactive_partition="${active%2}3"; inactive_fs=2;;
+    *3) inactive_partition="${active%3}2"; inactive_fs=1;;
+     *)
+         error "Unexpected active partition $active"
+         return 1
+         ;;
+esac
+
+if [ -n "$SWUPD_INACTIVE_PARTITION" ]; then
+    if [ "$SWUPD_INACTIVE_PARTITION" != "$inactive_partition" ]; then
+        error "Configured and detected inactive partitions don't match:" \
+              "$SWUPD_INACTIVE_PARTITION != $inactive_partition"
+        return 1
+    fi
+else
+    SWUPD_INACTIVE_PARTITION=$inactive_partition
+fi
+
+if [ -n "$SWUPD_INACTIVE_FS" ]; then
+    if [ "$SWUPD_INACTIVE_FS" != "$inactive_fs" ]; then
+        error "Configured and detected inactive filesystems don't match:" \
+              "$SWUPD_INACTIVE_FS != $inactive_fs"
+        return 1
+    fi
+else
+    SWUPD_INACTIVE_FS=$inactive_fs
+fi
+
+info "Inactive partition:  $SWUPD_INACTIVE_PARTITION."
+info "Inactive filesystem: $SWUPD_INACTIVE_FS."
+
+return 0

@@ -1,0 +1,34 @@
+#!/bin/sh
+
+info "Checking supplied configuration..."
+
+if [ -n "$SWUPD_SERVER_URL" ]; then
+    if [ -n "$SWUPD_VERSION_URL" ]; then
+        error "swupd: ambiguous URL, both server and version URLs given."
+        return 1;
+    fi
+    if [ -n "$SWUPD_CONTENT_URL" ]; then
+        error "swupd: ambiguous URL, both server and content URLs given."
+        return 1;
+    fi
+
+    SWUPD_VERSION_URL="$SWUPD_SERVER_URL"
+    SWUPD_CONTENT_URL="$SWUPD_SERVER_URL"
+else
+    if [ -n "$SWUPD_VERSION_URL" -a -z "$SWUPD_CONTENT_URL" ]; then
+        error "swupd: missing content URL."
+        return 1
+    elif [ -z "$SWUPD_VERSION_URL" -a -n "$SWUPD_CONTENT_URL" ]; then
+        error "swupd: missing version URL."
+        return 1
+    fi
+fi
+
+info "Supplied configuration OK."
+
+if [ -n "$SWUPD_VERSION_URL" ]; then
+    info "Version URL: $SWUPD_VERSION_URL"
+    info "Content URL: $SWUPD_CONTENT_URL"
+fi
+
+return 0

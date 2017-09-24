@@ -1,0 +1,4 @@
+#!/bin/sh
+
+info "hook swupd update $SWUPD_INACTIVE_PARTITION..."
+
