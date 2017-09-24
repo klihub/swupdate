@@ -148,4 +148,11 @@ config UBOOT_FWENV
 	  in the tools directory. It tells where the U-Boot
 	  environment is saved.
 
+config SWUPDHANDLER
+	bool "swupd (ClearLinux software update) handler"
+	default n
+        depends on LIBCONFIG
+	help
+	  Enable support for pulling in updates using swupd(-client).
+
 endmenu
