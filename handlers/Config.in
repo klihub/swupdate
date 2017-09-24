@@ -148,4 +148,23 @@ config UBOOT_FWENV
 	  in the tools directory. It tells where the U-Boot
 	  environment is saved.
 
+config WRAPPER_HANDLER
+	bool "generic wrapper for arbitrary update backends"
+	default n
+        depends on LIBCONFIG
+	help
+	  This is a generic image handler for wrapping existing update
+	  mechanisms/backends in swupdate. It is alternative way of
+	  wrapping existing software updaters into swupdate. The handler
+	  itself does not implement almost any logic. It merely extracts
+	  the supplied configuration and passes it on to the backend.
+	  At the swupdate level, a wrapped backend is usually a set of
+	  small scriptlets (called hooks), which collectively handle all
+	  the update logic for that particular backend. The handler exposes
+	  the configuration to the backend as environment variables and
+	  runs the hooks for the backend until sucessful completion or an
+	  error. Additionally, the handler takes care of proxying progress,
+	  error, and other messages back from the update process to the
+	  swupdate logging infrastructure.
+
 endmenu
