@@ -1,0 +1,10 @@
+#!/bin/sh
+
+info "hook $0 running..."
+
+if [ "$SWUPD_FAIL" = "TRUE" ]; then
+    info "emulating failure (as requested)"
+    return 1
+else
+    return 0
+fi

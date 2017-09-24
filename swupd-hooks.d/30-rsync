@@ -1,0 +1,4 @@
+#!/bin/sh
+
+info "Should rsync / to $SWUPD_INACTIVE_PARTITION..."
+
