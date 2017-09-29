@@ -1,5 +1,17 @@
 #!/bin/sh
 
+# @requires: SWUPD_INACTIVE_ENTRY, SWUPD_INACTIVE_PARTITION
+
+#
+# hook: swap-bootloader
+#
+# This hook switches the bootloader entry for the next boot (oneshot) and
+# updates the reboot reason to "update in progress". This configuration is made
+# using EFI variables. Verification of a successful boot into the updated
+# rootfs and permanent switch of the bootloader entry is made by the
+# swupdate-verifier systemd service after reboot.
+#
+
 info "Setting bootloader entry..."
 
 source edgeos-bl-fns
@@ -9,7 +21,7 @@ EFI_MOUNTED=$(enableBootloaderCommunication)
 EFI_ENTRY_ONESHOT="/sys/firmware/efi/efivars/LoaderEntryOneShot-4a67b082-0a4c-41cf-b6c7-440b29bb8c4f"
 EFI_ENTRY_REBOOT_REASON="/sys/firmware/efi/efivars/LoaderEntryRebootReason-4a67b082-0a4c-41cf-b6c7-440b29bb8c4f"
 
-createBootloaderVariable "${EFI_ENTRY_ONESHOT}" "${SWUPD_INACTIVE_PARTITION}"
+createBootloaderVariable "${EFI_ENTRY_ONESHOT}" "${SWUPD_INACTIVE_ENTRY}"
 createBootloaderVariable "${EFI_ENTRY_REBOOT_REASON}" "update_in_progress"
 
 shutdownBootloaderCommunication "${EFI_MOUNTED}"
