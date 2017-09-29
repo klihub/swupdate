@@ -1,0 +1,32 @@
+#!/bin/sh
+
+# @sets: SWUPD_INACTIVE_PARTITION, SWUPD_ACTIVE_PARTITION
+
+#
+# hook: check-inactive
+#
+# This hook discovers the inactive and active partitions in the
+# the currently running setup.
+#
+
+info "Checking active/inactive partitions..."
+
+active=$(cat /proc/cmdline | sed 's/^.*root=//g;s/ .*$//g')
+
+case $active in
+    *2) SWUPD_INACTIVE_PARTITION="${active%2}3";;
+    *3) SWUPD_INACTIVE_PARTITION="${active%3}2";;
+     *)
+         error "Unexpected active partition $active"
+         return 1
+         ;;
+esac
+
+SWUPD_ACTIVE_PARTITION="$active"
+
+SWUPD_ACTIVE_ENTRY="edgeos_${SWUPD_ACTIVE_PARTITION##*/}"
+SWUPD_INACTIVE_ENTRY="edgeos_${SWUPD_INACTIVE_PARTITION##*/}"
+
+info "Current entries/partitions:"
+info "  - active:   $SWUPD_ACTIVE_ENTRY ($SWUPD_ACTIVE_PARTITION)"
+info "  - inactive: $SWUPD_INACTIVE_ENTRY ($SWUPD_INACTIVE_PARTITION)"

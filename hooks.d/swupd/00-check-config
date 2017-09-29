@@ -1,0 +1,47 @@
+#!/bin/sh
+
+# @requires: SWUPD_VERSION, SWUPD_UPDATE_URL
+# @sets: SWUPD_UPDATE_URL, SWUPD_FSTYPE
+
+#
+# hook: check-config
+#
+# This hook performs a basic sanity check on the supplied configuration.
+# The sanity check simply tests that all mandatory keys have been given
+# a value. Omitted keys that have a reasonable default are also set to
+# their default value here.
+#
+
+export LANG=en_US.UTF-8
+
+# Default content URL location within image.
+CONTENTURLFILE=/usr/share/defaults/swupd/contenturl
+
+info "Checking supplied configuration..."
+
+if [ -z "$SWUPD_VERSION" ]; then
+    error "swupd: version missing from update."
+    return 1
+fi
+
+if [ -z "$SWUPD_UPDATE_URL" ]; then
+    if [ -f $CONTENTURLFILE ]; then
+        SWUPD_UPDATE_URL=$(cat $CONTENTURLFILE)
+    fi
+fi
+
+if [ -z "$SWUPD_UPDATE_URL" ]; then
+    error "swupd: content-url missing from update."
+    return 1
+fi
+
+if [ -z "$SWUPD_FSTYPE" ]; then
+    SWUPD_FSTYPE="ext4"
+fi
+
+info "Supplied configuration OK."
+info "    - version: $SWUPD_VERSION"
+info "    - server:  $SWUPD_UPDATE_URL"
+info "    - fs type: $SWUPD_FSTYPE"
+
+return 0
