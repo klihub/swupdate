@@ -1,4 +1,15 @@
 #!/bin/sh
 
-info "Probably no need to swap active bootloader entry, already done by edgeos."
+info "Setting bootloader entry..."
 
+source edgeos-bl-fns
+
+EFI_ENTRY_ONESHOT="/sys/firmware/efi/efivars/LoaderEntryOneShot-4a67b082-0a4c-41cf-b6c7-440b29bb8c4f"
+EFI_ENTRY_REBOOT_REASON="/sys/firmware/efi/efivars/LoaderEntryRebootReason-4a67b082-0a4c-41cf-b6c7-440b29bb8c4f"
+
+createBootloaderVariable "${EFI_ENTRY_ONESHOT}" "${SWUPD_INACTIVE_PARTITION}"
+createBootloaderVariable "${EFI_ENTRY_REBOOT_REASON}" "update_in_progress"
+
+info "Successfully configured oneshot boot from ${SWUPD_INACTIVE_PARTITION}"
+
+return 0
