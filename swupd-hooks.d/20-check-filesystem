@@ -1,0 +1,32 @@
+#!/bin/sh
+
+# @requires: SWUPD_INACTIVE_PARTITION
+
+#
+# hook: check-filesystem
+#
+# This hook determines the filesystem type of the inactive partition.
+# If it has no filesystem, the hook will format it according to the
+# value of SWUPD_FSTYPE.
+#
+
+info "Checking filesystem type on $SWUPD_INACTIVE_PARTITION..."
+
+if ! blkid $SWUPD_INACTIVE_PARTITION | tr ' ' '\n' | grep -q TYPE=; then
+    SWUPD_INACTIVE_FSTYPE=""
+    info "$SWUPD_INACTIVE_PARTITION has no known fs."
+else
+    SWUPD_INACTIVE_FSTYPE=$(blkid $SWUPD_INACTIVE_PARTITION | tr ' ' '\n' | \
+                                grep TYPE= | sed 's/TYPE=//g;s/"//g')
+    info "$SWUPD_INACTIVE_PARTITION has $SWUPD_INACTIVE_FSTYPE filesystem."
+fi
+
+if [ "$SWUPD_INACTIVE_FSTYPE" != "$SWUPD_FSTYPE" ]; then
+    MKFSCMD="mkfs.$SWUPD_FSTYPE -F $SWUPD_INACTIVE_PARTITION"
+    info "Formatting $SWUPD_INACTIVE_PARTITION with $MKFSCMD..."
+    if ! $MKFSCMD; then
+        error "Formatting failed."
+        return 1
+    fi
+    SWUPD_INACTIVE_FSTYPE=$SWUPD_FSTYPE
+fi

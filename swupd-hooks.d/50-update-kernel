@@ -1,0 +1,39 @@
+#!/bin/sh
+
+# @requires: SWUPD_INACTIVE_PARTITION
+
+#
+# hook: update-kernel
+#
+# Update the kernel for the updated partition in the EFI partition.
+#
+
+info "Updating kernel on bootloader/EFI partition."
+
+mnt=$(mktemp -d)
+
+if [ -z "$mnt" ]; then
+    error "Failed to create temporary mount point."
+    return 1
+fi
+
+if ! mount $SWUPD_INACTIVE_PARTITION $mnt; then
+    error "Failed to mount $SWUPD_INACTIVE_PARTITION."
+    rmdir $mnt
+    return 1
+fi
+
+id=${SWUPD_INACTIVE_PARTITION##*/}
+
+cp $mnt/boot/bzImage /mnt/boot/bzImage_$id
+status=$?
+sync
+umount $mnt
+rmdir $mnt
+
+if [ $status != 0 ]; then
+    error "Failed to update kernel."
+    return 1
+else
+    return 0
+fi

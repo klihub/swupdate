@@ -1,0 +1,23 @@
+#!/bin/sh
+
+# @requires: SWUPD_INACTIVE_PARTITION, SWUPD_FSTYPE, SWUPD_VERSION
+
+#
+# hook: swupd-update
+#
+# This hook triggers the actual swupd update process.
+#
+
+info "Invoking system update"
+info "    - updating partition $SWUPD_INACTIVE_PARTITION"
+info "    - from server $SWUPD_CONTENT_URL"
+info "    - to version $SWUPD_VERSION..."
+
+export LANG=en_US.UTF-8
+
+MKFSCMD="mkfs.$SWUPD_FSTYPE $SWUPD_INACTIVE_PARTITION -F"
+UPDATECMD="/usr/bin/swupd-update-partition -m $SWUPD_VERSION \
+              -c $SWUPD_CONTENT_URL -p $SWUPD_INACTIVE_PARTITION"
+
+info "Executing update command $UPDATECMD -f '$MKFSCMD'..."
+$SHELL -c "$UPDATECMD -f \"${MKFSCMD}"\"

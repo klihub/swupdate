@@ -1,0 +1,37 @@
+#!/bin/sh
+
+# @requires: SWUPD_ACTIVE_PARTITION, SWUPD_INACTIVE_PARTITION
+
+#
+# hook: rsync-inactive
+#
+# This hooks rsyncs the active root filesystem with the inactive one.
+#
+
+info "Rsyncing $SWUPD_ACTIVE_PARTITION to $SWUPD_INACTIVE_PARTITION..."
+
+rootmnt=$(mktemp -d)
+inactmnt=$(mktemp -d)
+
+if [ -z "$rootmnt" -o -z "$inactmnt" ]; then
+    error "Failed to create temporary mount points."
+    rm -fr "$rootmnt" "$inactmnt"
+    return 1
+fi
+
+mount -oro $SWUPD_ACTIVE_PARTITION $rootmnt
+mount -orw $SWUPD_INACTIVE_PARTITION $inactmnt
+
+if ! rsync -aXx --inplace --delete $rootmnt/ $inactmnt/; then
+    status=1
+else
+    status=0
+fi
+
+umount $rootmnt
+umount $inactmnt
+
+rmdir $rootmnt
+rmdir $inactmnt
+
+return $status
