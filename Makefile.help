@@ -25,6 +25,8 @@ help:
 	@echo 'Development:'
 	@echo '  randconfig		- generate a random configuration'
 	@echo
+	@echo 'Installing:'
+	@echo '  install		- install (to $(DESTDIR)$(BINDIR))'
+	@echo ''
 	@echo 'Documentation:'
 	@make -C doc help
-

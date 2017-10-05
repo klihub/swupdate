@@ -1,0 +1,24 @@
+BINDIR   ?= /usr/bin
+HOOKDIR  ?= /usr/share/swupdate/hooks.d
+BACKENDS ?= $(filter-out run-hooks,$(notdir $(wildcard hooks.d/*)))
+
+ifneq ($(CONFIG_WRAPPER_HANDLER),)
+INSTALL_HOOKS = install-hooks
+endif
+
+install: install-bin $(INSTALL_HOOKS)
+
+install-bin:
+	$(Q)install -m 755 -d $(DESTDIR)$(BINDIR)
+	$(Q)install -m 755 swupdate $(DESTDIR)$(BINDIR)
+
+install-hooks:
+	$(Q)install -m 755 -d $(DESTDIR)$(HOOKDIR)
+	$(Q)install -m 755 hooks.d/run-hooks $(DESTDIR)$(HOOKDIR)
+	$(Q)for d in $(BACKENDS); do \
+	    install -m 755 -d $(DESTDIR)$(HOOKDIR)/$$d; \
+	    for h in hooks.d/$$d/[0-9]*-*; do \
+	        install -m 755 $$h $(DESTDIR)$(HOOKDIR)/$$d; \
+	    done; \
+	done
+
