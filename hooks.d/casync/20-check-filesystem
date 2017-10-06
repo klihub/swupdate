@@ -1,0 +1,48 @@
+#!/bin/sh
+
+# @requires: CASYNC_INACTIVE_PARTITION
+# @can-use: CASYNC_ACTIVE_PARTITION
+
+#
+# hook: check-filesystem
+#
+# This hook determines the filesystem type of the inactive partition.
+# If it has no filesystem, the hook will format it according to the
+# value of CASYNC_FILESYSTEM, if it is set. Otherwise it will use
+# the filesystem type detected on the active partition.
+#
+
+info "Checking filesystem type of $CASYNC_INACTIVE_PARTITION..."
+
+# detect inactive partition type
+if ! blkid $CASYNC_INACTIVE_PARTITION | tr ' ' '\n' | grep -q TYPE=; then
+    inactive=""
+else
+    inactive=$(blkid $CASYNC_INACTIVE_PARTITION | tr ' ' '\n' | \
+                 grep TYPE= | sed 's/TYPE=//g;s/"//g')
+fi
+
+# detect active partition type
+if ! blkid $CASYNC_ACTIVE_PARTITION | tr ' ' '\n' | grep -q TYPE=; then
+    active=""
+else
+    active=$(blkid $CASYNC_ACTIVE_PARTITION | tr ' ' '\n' | \
+                 grep TYPE= | sed 's/TYPE=//g;s/"//g')
+fi
+
+info "Current filesystem of $CASYNC_INACTIVE_PARTITION: ${inactive:-none}"
+
+# if no filesystem type is give, default to active type, fallback to ext4
+if [ -z "$CASYNC_FILESYSTEM" ]; then
+    CASYNC_FILESYSTEM=${active:-ext4}
+fi
+
+# See if we need to (re)format the inactive partition.
+if [ "$inactive" != "$CASYNC_FILESYSTEM" ]; then
+    info "Formatting $CASYNC_INACTIVE_PARTITION (${inactive:-none}->$fstype)..."
+    if ! mkfs.$CASYNC_FILESYSTEM -F $CASYNC_INACTIVE_PARTITION; then
+        error "Formatting failed."
+        return 1
+    fi
+fi
+

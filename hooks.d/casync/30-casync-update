@@ -1,0 +1,65 @@
+#!/bin/sh
+
+# @requires: CASYNC_INACTIVE_PARTITION, CASYNC_VERSION, CASYNC_UPDATE_URL
+# @sets: CASYNC_INACTIVE_MOUNT
+
+#
+# hook: casync-update
+#
+# This hook triggers the actual update process.
+#
+
+info "Executing system update:"
+info "    -  on partition: $CASYNC_INACTIVE_PARTITION"
+info "    -  from version: ..."
+info "    -    to version: $CASYNC_VERSION"
+info "    - fetching from: $CASYNC_UPDATE_URL"
+
+if ! inactive=$(mktemp -d); then
+    error "Failed to create temporary mount point."
+    return 1
+fi
+
+if ! active=$(mktemp -d); then
+    error "Failed to create temporary mount point."
+    rmdir $inactive
+    return 1
+fi
+
+if ! mount -oro $CASYNC_ACTIVE_PARTITION $active; then
+    error "Failed to ro-mount $CASYNC_ACTIVE_PARTITION..."
+    rmdir $active
+    rmdir $inactive
+    return 1
+fi
+
+if ! mount $CASYNC_INACTIVE_PARTITION $inactive; then
+    error "Failed to mount $CASYNC_INACTIVE_PARTITION..."
+    umount $active
+    rmdir $active
+    rmdir $inactive
+    return 1
+fi
+
+$SHELL -c "casync --verbose --store $CASYNC_UPDATE_URL/default.castr \
+               extract $CASYNC_UPDATE_URL/$CASYNC_VERSION.caidx $inactive \
+               --seed $active"
+
+status=$?
+
+sync
+
+if [ $status != 0 ]; then
+    error "Update failed."
+    rm -fr $inactive/???*
+    umount $inactive
+    rmdir $inactive
+    CASYNC_INACTIVE_MOUNT=""
+else
+    CASYNC_INACTIVE_MOUNT=$inactive
+fi
+
+umount $active
+rmdir $active
+
+return $status

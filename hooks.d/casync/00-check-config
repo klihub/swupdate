@@ -1,0 +1,40 @@
+#!/bin/sh
+
+# @may-set: CASYNCD_CONTENT_URL, CASYNC_FSTYPE
+
+#
+# hook: check-config
+#
+# This hook performs a basic sanity check on the supplied configuration.
+# The sanity check simply tests that all mandatory keys have been given
+# a value. Omitted keys that have a reasonable default are also set to
+# their default value here.
+#
+
+info "Checking supplied update configuration..."
+
+export LANG=en_US.UTF-8
+
+# Default content URL location within image.
+UPDATE_URL_FILE=/var/lib/casync/update-url
+
+if [ -z "$CASYNC_VERSION" ]; then
+    CASYNC_VERSION="latest"
+fi
+
+if [ -z "$CASYNC_UPDATE_URL" ]; then
+    if [ -f $UPDATE_URL_FILE ]; then
+        CASYNC_UPDATE_URL=$(cat $UPDATE_URL_FILE)
+    fi
+fi
+
+if [ -z "$CASYNC_UPDATE_URL" ]; then
+    error "update URL not set in update file, and no default available."
+    return 1
+fi
+
+info "Will attempt update using the following settings:"
+info "    - updating to version: $CASYNC_VERSION"
+info "    -   URL to fetch from: $CASYNC_UPDATE_URL"
+
+return 0

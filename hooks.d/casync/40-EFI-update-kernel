@@ -1,0 +1,26 @@
+#!/bin/sh
+
+# @requires: CASYNC_INACTIVE_PARTITION CASYNC_INACTIVE_MOUNT
+
+#
+# hook: update-kernel
+#
+# Update the kernel for the updated partition in the EFI partition.
+#
+
+info "Updating kernel for $CASYNC_INACTIVE_PARTITON on EFI partition."
+
+id=${CASYNC_INACTIVE_PARTITION##*/}
+
+if ! cp $CASYNC_INACTIVE_MOUNT/boot/bzImage /mnt/boot/bzImage_$id; then
+    error "Failed to update kernel on EFI partition."
+    status=1
+fi
+
+sync
+umount $CASYNC_INACTIVE_MOUNT
+rmdir $CASYNC_INACTIVE_MOUNT
+
+CASYNC_INACTIVE_MOUNT=""
+
+return $status

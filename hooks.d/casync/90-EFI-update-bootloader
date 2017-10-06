@@ -1,0 +1,43 @@
+#!/bin/sh
+
+# @requires: CASYNC_INACTIVE_ENTRY, CASYNC_INACTIVE_PARTITION
+
+#
+# hook: swap-bootloader
+#
+# This hook switches the bootloader entry for the next boot (oneshot) and
+# updates the reboot reason to "update in progress". This configuration is made
+# using EFI variables. Verification of a successful boot into the updated
+# rootfs and permanent switch of the bootloader entry is made by the
+# swupdate-verifier systemd service after reboot.
+#
+
+info "Updating EFI bootloader entry..."
+
+EDGEOS_LIB=/usr/sbin/edgeos-bl-fns
+EFI_PREFIX=/sys/firmware/efi/efivars/LoaderEntry
+EFI_ONESHOT=${EFI_PREFIX}OneShot-4a67b082-0a4c-41cf-b6c7-440b29bb8c4f
+EFI_REASON=${EFI_PREFIX}EntryRebootReason-4a67b082-0a4c-41cf-b6c7-440b29bb8c4f
+
+if ! source $EDGEOS_LIB; then
+    error "Failed to load script library $EDGEOS_LIB."
+    return 1
+fi
+
+if ! EFI_MOUNT=$(enableBootloaderCommunication); then
+    error "Failed to mount EFI system partition."
+    return 1
+fi
+
+if ! createBootloaderVariable "${EFI_ONESHOT}" "${CASYNC_INACTIVE_ENTRY}" -o
+   ! createBootloaderVariable "${EFI_REASON}" "update_in_progress"; then
+    error "Failed to update EFI boot loader entries."
+    status=1
+else
+    status=0
+    info "Successfully enabled oneshot boot from ${CASYNC_INACTIVE_PARTITION}."
+fi
+
+shutdownBootloaderCommunication "$EFI_MOUNT"
+
+return $status

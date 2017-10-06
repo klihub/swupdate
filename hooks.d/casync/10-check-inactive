@@ -1,0 +1,32 @@
+#!/bin/sh
+
+# @sets: CASYNC_INACTIVE_PARTITION, CASYNC_ACTIVE_PARTITION
+# @sets: CASYNC_ACTIVE_ENTRY, CASYNC_INACTIVE_ENTRY
+
+#
+# hook: check-inactive
+#
+# This hook discovers the inactive and active partitions in the
+# the currently running setup.
+#
+
+info "Checking running system for active/inactive partitions..."
+
+active=$(cat /proc/cmdline | sed 's/^.*root=//g;s/ .*$//g')
+
+case $active in
+    *2) CASYNC_INACTIVE_PARTITION="${active%2}3";;
+    *3) CASYNC_INACTIVE_PARTITION="${active%3}2";;
+     *)
+         error "Unexpected active partition $active"
+         return 1
+         ;;
+esac
+
+CASYNC_ACTIVE_PARTITION="$active"
+CASYNC_ACTIVE_ENTRY="edgeos_${CASYNC_ACTIVE_PARTITION##*/}"
+CASYNC_INACTIVE_ENTRY="edgeos_${CASYNC_INACTIVE_PARTITION##*/}"
+
+info "Currently running partition setup:"
+info "  - active:   $CASYNC_ACTIVE_PARTITION ($CASYNC_ACTIVE_ENTRY)"
+info "  - inactive: $CASYNC_INACTIVE_PARTITION ($CASYNC_INACTIVE_ENTRY)"
