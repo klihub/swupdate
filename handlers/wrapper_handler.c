@@ -243,6 +243,8 @@ static inline void io_proxy_write(int level, const char *s, int n)
 {
 	char msg[NOTIFY_BUF_SIZE];
 
+	(void)level;
+
 	if (n <= 0)
 		return;
 
@@ -251,7 +253,7 @@ static inline void io_proxy_write(int level, const char *s, int n)
 
 	snprintf(msg, sizeof(msg), "[wrapper] %.*s", n, s);
 
-	notify(RUN, RECOVERY_NO_ERROR, level, msg);
+	notify(RUN, RECOVERY_NO_ERROR, msg);
 }
 
 
@@ -491,7 +493,7 @@ static void wrapper_config_exit(wrap_t *swu)
 }
 
 
-static int copy_memcpy(void *out, const void *buf, unsigned int len)
+static int copy_memcpy(void *out, const void *buf, int len)
 {
 	char **dstp = out;
 
@@ -521,7 +523,7 @@ static int wrapper_config_read(wrap_t *swu)
 	buf[0] = '\0';
 	p = buf;
 	if (copyfile(img->fdin, &p,
-		     img->size, (unsigned long *)&img->offset, img->seek,
+		     img->size, (unsigned long *)&img->offset,
 		     0 /* no skip */, img->compressed,
 		     &img->checksum, img->sha256, img->is_encrypted,
 		     copy_memcpy) < 0) {
@@ -876,7 +878,7 @@ static int register_backends(wrap_t *swu)
 		if ((type = strdup(de->d_name)) == NULL)
 			goto nomem;
 
-		if (register_handler(type, install_wrapped_update, IMAGE_HANDLER,
+		if (register_handler(type, install_wrapped_update,
 				     (void *)swu) < 0) {
 			ERROR("failed to register handler for '%s'", type);
 			free(type);
