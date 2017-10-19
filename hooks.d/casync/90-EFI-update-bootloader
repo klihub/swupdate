@@ -17,7 +17,7 @@ info "Updating EFI bootloader entry..."
 EDGEOS_LIB=/usr/sbin/edgeos-bl-fns
 EFI_PREFIX=/sys/firmware/efi/efivars/LoaderEntry
 EFI_ONESHOT=${EFI_PREFIX}OneShot-4a67b082-0a4c-41cf-b6c7-440b29bb8c4f
-EFI_REASON=${EFI_PREFIX}EntryRebootReason-4a67b082-0a4c-41cf-b6c7-440b29bb8c4f
+EFI_REASON=${EFI_PREFIX}RebootReason-4a67b082-0a4c-41cf-b6c7-440b29bb8c4f
 
 if ! source $EDGEOS_LIB; then
     error "Failed to load script library $EDGEOS_LIB."
